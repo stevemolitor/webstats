@@ -14,7 +14,15 @@ describe('webstats', function () {
     var logFile = path.resolve(__dirname, 'access.log');
     var logStream = fs.createReadStream(logFile);
 
-    webstats(logStream, function (err, stats) {
+    var opts = {
+      byType: [
+        {name: 'php', regexp: /\.php$/},
+        {name: 'phpGet', regexp: /\.php$/, method: 'GET'},
+        {name: 'phpPost', regexp: /\.php$/, method: 'POST'}
+      ]
+    };
+
+    webstats(logStream, opts, function (err, stats) {
       expect(err).to.not.exist;
       expect(stats.totalSeconds).closeTo(1, 0.01);
       expect(stats.totalRequests).to.equal(3);
@@ -28,6 +36,11 @@ describe('webstats', function () {
       expect(stats.maxRequestsPerSecond).to.equal(3);
       expect(stats.uniqueRequests).to.equal(3);
       expect(stats.topTen.length).to.equal(3);
+
+      expect(stats.php).to.equal(2);
+      expect(stats.phpGet).to.equal(0);
+      expect(stats.phpPost).to.equal(2);
+
       done();
     });
   });
